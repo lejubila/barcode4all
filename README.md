@@ -1,66 +1,169 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Barcode Generator Pro
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Applicazione **Laravel + Docker** per generare barcode professionali in formato
+**vettoriale** (SVG, EPS, PDF) e raster ad alta risoluzione (JPEG), con anteprima
+live, composizione guidata dei supplementi EAN e generazione in batch da CSV.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## ✨ Caratteristiche
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Tipi di barcode**: ISBN-13, ISBN-10, ISSN, EAN-13, EAN-8, EAN-13 + Add-on 2/5
+  cifre, UPC-A, UPC-E, Code 128, Code 39.
+- **Formati di output**:
+  - **SVG** — vettoriale nativo.
+  - **EPS** — PostScript nativo, compatto (~3–4 KB, font Courier non incorporato).
+  - **PDF** — vettoriale via DOMPDF.
+  - **JPEG** — raster a 150 / 300 / 600 DPI (librsvg + ImageMagick).
+- **Calcolo automatico del check digit** (EAN-13/8, ISBN-10/13, ISSN) e rifiuto
+  dei codici con cifra di controllo errata.
+- **Supplementi EAN-13 + 2 / + 5** con composizione **guidata** (valuta + prezzo
+  per i libri, numero di edizione per i periodici) oppure **inserimento diretto**.
+- **Anteprima live** con debounce (Alpine.js + Tailwind).
+- **Generazione batch** da CSV con download in ZIP.
+- **Rate limiting** sugli endpoint di generazione.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🧱 Stack tecnologico
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+| Componente | Tecnologia |
+|---|---|
+| Backend | PHP 8.2, Laravel 11 |
+| Barcode | [picqer/php-barcode-generator](https://github.com/picqer/php-barcode-generator) |
+| PDF | [barryvdh/laravel-dompdf](https://github.com/barryvdh/laravel-dompdf) |
+| EPS | Generatore PostScript nativo |
+| JPEG | librsvg (`rsvg-convert`) + ImageMagick |
+| Frontend | Blade + Alpine.js + Tailwind (CDN) |
+| Container | Docker Compose (php-fpm, nginx, MySQL 8) |
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🚀 Avvio rapido
 
-## Laravel Sponsors
+Requisiti: **Docker** e **Docker Compose**.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+# 1. Copia la configurazione
+cp .env.example .env
 
-### Premium Partners
+# 2. Avvia lo stack (app + nginx + MySQL)
+docker compose up -d
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+# 3. Genera la chiave applicativa ed esegui le migrazioni
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate
+```
 
-## Contributing
+Apri **http://localhost:8080**.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+> **Porta occupata?** La porta host è configurabile: la 80 del container è mappata
+> su `${APP_PORT:-8080}`. Se la 8080 è già in uso:
+> ```bash
+> APP_PORT=8091 docker compose up -d   # poi apri http://localhost:8091
+> ```
 
-## Code of Conduct
+### Comandi utili
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+docker compose exec app php artisan optimize:clear   # svuota le cache
+docker compose exec app php artisan test             # esegue i test
+docker compose logs -f app                           # log applicativi
+docker compose down                                  # ferma lo stack
+```
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🔌 Endpoint
 
-## License
+| Metodo | Rotta | Descrizione |
+|---|---|---|
+| `GET` | `/` | Form di generazione con anteprima live |
+| `POST` | `/generate` | Anteprima AJAX → JSON `{ ok, svg, dataUri }` |
+| `POST` | `/download` | Scarica uno o più formati (più formati → ZIP) |
+| `POST` | `/batch` | Upload CSV → ZIP con tutti i barcode |
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Gli endpoint `generate` / `download` / `batch` sono protetti da rate limiting
+(`throttle:60,1`).
+
+---
+
+## 📚 Tipi di barcode e add-on
+
+### Supplementi EAN (Add-on)
+
+L'add-on può essere inserito **direttamente** (2 o 5 cifre) o **composto in modo
+guidato** secondo gli standard:
+
+- **EAN-13 + 5** (prezzo consigliato libri): 1ª cifra = valuta, restanti 4 = prezzo
+  ×100 (max 99,99). Es. USD 24,95 → `52495`.
+  Valute: `0`/`1` = GBP £, `3` = AUD $, `4` = NZD $, `5` = USD $, `6` = CAD $,
+  `9` = nessun prezzo (`90000`).
+- **EAN-13 + 2** (periodici): numero progressivo di edizione/fascicolo (00–99).
+
+---
+
+## 📦 Generazione batch (CSV)
+
+Carica un CSV con intestazione opzionale e le colonne:
+
+```csv
+type,code,addon,output_format
+ISBN13,9780306406157,,svg
+EAN13,5901234123457,,pdf
+EAN13+5,5901234123457,52495,svg
+CODE128,HELLO-123,,svg
+```
+
+Il risultato è uno ZIP con tutti i file generati; le righe in errore vengono
+raccolte in un `errors.txt` incluso nell'archivio.
+
+---
+
+## 🗂️ Struttura del progetto
+
+```
+.
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/BarcodeController.php
+│   │   └── Requests/GenerateBarcodeRequest.php
+│   └── Services/
+│       ├── BarcodeService.php          # generazione SVG + check digit + add-on
+│       ├── ExportService.php           # SVG → PDF / EPS / JPEG
+│       └── RawBarcodeGenerator.php      # accesso ai dati barra grezzi (picqer)
+├── resources/views/barcode/index.blade.php
+├── routes/web.php
+├── tests/Feature/BarcodeGenerationTest.php
+├── docker/
+│   ├── php/Dockerfile                   # php:8.2-fpm + gd/zip + gs + ImageMagick + librsvg
+│   └── nginx/default.conf
+└── docker-compose.yml
+```
+
+---
+
+## 🧪 Test
+
+```bash
+docker compose exec app php artisan test
+```
+
+La suite copre: generazione ISBN-13 valido, rifiuto del check digit errato,
+conversione ISBN-10 → 13, EAN-13 + add-on a 5 cifre, codifica ISSN (prefisso 977),
+conversioni SVG → PDF / EPS (vettoriale e compatto) / JPEG 300 DPI e l'endpoint di
+anteprima.
+
+---
+
+## 🔒 Sicurezza
+
+- Validazione e sanitizzazione dell'input (solo caratteri ammessi per tipo).
+- File temporanei in `storage/app/temp/`, eliminati dopo l'invio.
+- Rate limiting sugli endpoint di generazione.
+
+---
+
+## 📄 Licenza
+
+Distribuito sotto licenza **MIT**.
