@@ -50,9 +50,13 @@ cp .env.example .env
 # 2. Avvia lo stack (app + nginx + MySQL)
 docker compose up -d
 
-# 3. Genera la chiave applicativa ed esegui le migrazioni
+# 3. Installa le dipendenze PHP (la cartella vendor/ non è versionata)
+docker compose exec app composer install
+
+# 4. Genera la chiave applicativa, esegui le migrazioni e il link allo storage
 docker compose exec app php artisan key:generate
 docker compose exec app php artisan migrate
+docker compose exec app php artisan storage:link
 ```
 
 Apri **http://localhost:8080**.
