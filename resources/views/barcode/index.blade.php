@@ -1,18 +1,29 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Barcode Generator Pro</title>
+    <title>{{ config('app.name') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800">
 <div class="max-w-5xl mx-auto p-6" x-data="barcodeApp()">
-    <header class="mb-6">
-        <h1 class="text-3xl font-bold text-slate-900">Barcode Generator Pro</h1>
-        <p class="text-slate-500">Genera barcode professionali in formato vettoriale (SVG, EPS, PDF, JPEG).</p>
+    <header class="mb-6 flex items-start justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900">{{ config('app.name') }}</h1>
+            <p class="text-slate-500">{{ __('messages.subtitle') }}</p>
+        </div>
+        {{-- Selettore lingua / Language switcher --}}
+        <nav class="flex items-center gap-2 text-sm shrink-0 pt-1">
+            @foreach (['it' => 'IT', 'en' => 'EN'] as $loc => $label)
+                <a href="{{ route('locale.switch', $loc) }}"
+                   class="px-2 py-1 rounded {{ app()->getLocale() === $loc ? 'bg-indigo-600 text-white font-semibold' : 'text-slate-500 hover:bg-slate-200' }}">
+                    {{ $label }}
+                </a>
+            @endforeach
+        </nav>
     </header>
 
     <div class="grid md:grid-cols-2 gap-6">
@@ -23,7 +34,7 @@
             @csrf
 
             <div>
-                <label class="block text-sm font-medium mb-1">Tipo barcode</label>
+                <label class="block text-sm font-medium mb-1">{{ __('messages.type') }}</label>
                 <select name="type" x-model="type" @change="queuePreview"
                         class="w-full border rounded-lg px-3 py-2">
                     @foreach ($types as $t)
@@ -33,23 +44,23 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium mb-1">Codice</label>
+                <label class="block text-sm font-medium mb-1">{{ __('messages.code') }}</label>
                 <input type="text" name="code" x-model="code" @input="queuePreview"
-                       placeholder="es. 9788804707264"
+                       placeholder="{{ __('messages.code_ph') }}"
                        class="w-full border rounded-lg px-3 py-2 font-mono">
             </div>
 
             <div x-show="isAddon" x-cloak class="space-y-3 border border-slate-200 rounded-lg p-3 bg-slate-50">
                 <div class="flex items-center justify-between">
-                    <label class="text-sm font-medium">Add-on (supplemento)</label>
+                    <label class="text-sm font-medium">{{ __('messages.addon') }}</label>
                     {{-- Toggle modalità --}}
                     <div class="inline-flex rounded-lg border border-slate-300 overflow-hidden text-sm">
                         <button type="button" @click="setAddonMode('guidato')"
                                 :class="addonMode === 'guidato' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600'"
-                                class="px-3 py-1">Guidato</button>
+                                class="px-3 py-1">{{ __('messages.guided') }}</button>
                         <button type="button" @click="setAddonMode('diretto')"
                                 :class="addonMode === 'diretto' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600'"
-                                class="px-3 py-1 border-l border-slate-300">Diretto</button>
+                                class="px-3 py-1 border-l border-slate-300">{{ __('messages.direct') }}</button>
                     </div>
                 </div>
 
@@ -58,30 +69,27 @@
                     <div class="space-y-2">
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-xs text-slate-500 mb-1">Valuta</label>
+                                <label class="block text-xs text-slate-500 mb-1">{{ __('messages.currency') }}</label>
                                 <select x-model="addonCurrency" @change="composeAddon()"
                                         class="w-full border rounded-lg px-2 py-2 text-sm">
-                                    <option value="5">5 — USD $ (Dollaro USA)</option>
-                                    <option value="6">6 — CAD $ (Dollaro canadese)</option>
-                                    <option value="1">1 — GBP £ (Sterlina)</option>
-                                    <option value="0">0 — GBP £ (Sterlina)</option>
-                                    <option value="3">3 — AUD $ (Dollaro australiano)</option>
-                                    <option value="4">4 — NZD $ (Dollaro neozelandese)</option>
-                                    <option value="9">9 — Nessun prezzo (90000)</option>
+                                    <option value="5">5 — USD $ ({{ __('messages.cur_usd') }})</option>
+                                    <option value="6">6 — CAD $ ({{ __('messages.cur_cad') }})</option>
+                                    <option value="1">1 — GBP £ ({{ __('messages.cur_gbp') }})</option>
+                                    <option value="0">0 — GBP £ ({{ __('messages.cur_gbp') }})</option>
+                                    <option value="3">3 — AUD $ ({{ __('messages.cur_aud') }})</option>
+                                    <option value="4">4 — NZD $ ({{ __('messages.cur_nzd') }})</option>
+                                    <option value="9">9 — {{ __('messages.cur_no_price') }} (90000)</option>
                                 </select>
                             </div>
                             <div x-show="addonCurrency !== '9'">
-                                <label class="block text-xs text-slate-500 mb-1">Prezzo</label>
+                                <label class="block text-xs text-slate-500 mb-1">{{ __('messages.price') }}</label>
                                 <input type="number" step="0.01" min="0" max="99.99"
                                        x-model="addonPrice" @input="composeAddon()"
                                        placeholder="24.95"
                                        class="w-full border rounded-lg px-2 py-2 text-sm font-mono">
                             </div>
                         </div>
-                        <p class="text-xs text-slate-500">
-                            1ª cifra = valuta, restanti 4 = prezzo ×100 (max 99,99).
-                            Es. USD 24,95 → <span class="font-mono">52495</span>.
-                        </p>
+                        <p class="text-xs text-slate-500">{{ __('messages.price_help') }}</p>
                     </div>
                 </template>
 
@@ -89,22 +97,20 @@
                 <template x-if="addonMode === 'guidato' && type === 'EAN13+2'">
                     <div class="space-y-2">
                         <div>
-                            <label class="block text-xs text-slate-500 mb-1">Numero edizione / fascicolo</label>
+                            <label class="block text-xs text-slate-500 mb-1">{{ __('messages.issue') }}</label>
                             <input type="number" min="0" max="99"
                                    x-model="addonIssue" @input="composeAddon()"
                                    placeholder="7"
                                    class="w-full border rounded-lg px-2 py-2 text-sm font-mono">
                         </div>
-                        <p class="text-xs text-slate-500">
-                            Supplemento a 2 cifre (00–99), usato sui periodici per il numero progressivo.
-                        </p>
+                        <p class="text-xs text-slate-500">{{ __('messages.issue_help') }}</p>
                     </div>
                 </template>
 
                 {{-- Valore add-on effettivo (inviato col form) --}}
                 <div>
                     <label class="block text-xs text-slate-500 mb-1"
-                           x-text="addonMode === 'guidato' ? 'Codice add-on generato' : 'Codice add-on'"></label>
+                           x-text="addonMode === 'guidato' ? I18N.addon_generated : I18N.addon_code"></label>
                     <input type="text" name="addon" x-model="addon" @input="queuePreview"
                            :readonly="addonMode === 'guidato'"
                            :placeholder="type === 'EAN13+2' ? '07' : '52495'"
@@ -114,27 +120,27 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium mb-1">Larghezza barre</label>
+                <label class="block text-sm font-medium mb-1">{{ __('messages.bar_width') }}</label>
                 <select name="width" x-model="width" @change="queuePreview"
                         class="w-full border rounded-lg px-3 py-2">
-                    <option value="fine">Fine</option>
-                    <option value="medio">Medio</option>
-                    <option value="largo">Largo</option>
+                    <option value="fine">{{ __('messages.w_fine') }}</option>
+                    <option value="medio">{{ __('messages.w_medium') }}</option>
+                    <option value="largo">{{ __('messages.w_large') }}</option>
                 </select>
             </div>
 
             <div>
-                <label class="block text-sm font-medium mb-1">Altezza barre: <span x-text="height"></span>px</label>
+                <label class="block text-sm font-medium mb-1">{{ __('messages.bar_height') }}: <span x-text="height"></span>px</label>
                 <input type="range" name="height" min="30" max="160" x-model="height" @input="queuePreview" class="w-full">
             </div>
 
             <div class="flex items-center gap-4">
                 <label class="flex items-center gap-2">
                     <input type="checkbox" name="show_text" value="1" x-model="showText" @change="queuePreview">
-                    <span class="text-sm">Mostra cifre sotto</span>
+                    <span class="text-sm">{{ __('messages.show_text') }}</span>
                 </label>
                 <label class="flex items-center gap-2">
-                    <span class="text-sm">Colore</span>
+                    <span class="text-sm">{{ __('messages.color') }}</span>
                     <input type="color" name="color" x-model="color" @input="queuePreview">
                 </label>
             </div>
@@ -142,7 +148,7 @@
             <hr>
 
             <div>
-                <label class="block text-sm font-medium mb-2">Formati di output</label>
+                <label class="block text-sm font-medium mb-2">{{ __('messages.output_formats') }}</label>
                 <div class="flex flex-wrap gap-3">
                     <template x-for="f in ['svg','eps','pdf','jpeg']" :key="f">
                         <label class="flex items-center gap-2">
@@ -154,7 +160,7 @@
             </div>
 
             <div x-show="formats.includes('jpeg')" x-cloak>
-                <label class="block text-sm font-medium mb-1">DPI (JPEG)</label>
+                <label class="block text-sm font-medium mb-1">{{ __('messages.dpi') }}</label>
                 <select name="dpi" x-model="dpi" class="w-full border rounded-lg px-3 py-2">
                     <option value="150">150</option>
                     <option value="300">300</option>
@@ -164,14 +170,14 @@
 
             <button type="submit"
                     class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg py-2.5">
-                Scarica (<span x-text="formats.length"></span> formati)
+                {{ __('messages.download') }} (<span x-text="formats.length"></span>)
             </button>
         </form>
 
         {{-- ------------------------------------------------ Preview --}}
         <div class="space-y-6">
             <div class="bg-white rounded-xl shadow p-6">
-                <h2 class="font-semibold mb-3">Anteprima</h2>
+                <h2 class="font-semibold mb-3">{{ __('messages.preview') }}</h2>
                 <div class="border rounded-lg p-4 bg-white min-h-[160px] flex items-center justify-center overflow-auto">
                     <template x-if="error">
                         <p class="text-red-600 text-sm" x-text="error"></p>
@@ -184,13 +190,13 @@
             <form class="bg-white rounded-xl shadow p-6 space-y-3"
                   method="POST" action="{{ route('barcode.batch') }}" enctype="multipart/form-data">
                 @csrf
-                <h2 class="font-semibold">Generazione batch (CSV)</h2>
-                <p class="text-sm text-slate-500">Colonne: <code>type,code,addon,output_format</code> &middot; scarica uno ZIP.</p>
+                <h2 class="font-semibold">{{ __('messages.batch_title') }}</h2>
+                <p class="text-sm text-slate-500">{{ __('messages.batch_cols') }}: <code>type,code,addon,output_format</code> &middot; {{ __('messages.batch_note') }}.</p>
                 <input type="file" name="csv" accept=".csv,.txt" required
                        class="block w-full text-sm border rounded-lg p-2">
                 <button type="submit"
                         class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-lg px-4 py-2">
-                    Carica ed elabora
+                    {{ __('messages.batch_button') }}
                 </button>
             </form>
         </div>
@@ -199,6 +205,7 @@
 
 <style>[x-cloak]{display:none!important}</style>
 <script>
+const I18N = @json(__('messages'));
 function barcodeApp() {
     return {
         type: 'ISBN13',
@@ -265,7 +272,7 @@ function barcodeApp() {
                 const need = this.type === 'EAN13+2' ? 2 : 5;
                 if (!/^\d+$/.test(this.addon) || this.addon.length !== need) {
                     this.svg = '';
-                    this.error = 'Add-on: inserisci ' + need + ' cifre.';
+                    this.error = I18N.err_addon_digits.replace(':n', need);
                     return;
                 }
             }
@@ -285,22 +292,22 @@ function barcodeApp() {
                 });
                 if (res.status === 429) {
                     // Rate limited: keep the current preview and back off before retrying.
-                    this.error = 'Troppe richieste, attendo un istante…';
+                    this.error = I18N.err_rate_limited;
                     clearTimeout(this._previewTimer);
                     this._previewTimer = setTimeout(() => this.preview(), 1500);
                     return;
                 }
                 const data = await res.json();
                 if (data.ok) { this.svg = data.svg; this.error = ''; }
-                else { this.error = data.error || 'Errore di validazione'; }
+                else { this.error = data.error || I18N.err_validation; }
             } catch (e) {
-                this.error = 'Errore di rete';
+                this.error = I18N.err_network;
             }
         },
         onDownload(e) {
             if (this.formats.length === 0) {
                 e.preventDefault();
-                this.error = 'Seleziona almeno un formato di output.';
+                this.error = I18N.err_no_format;
             }
         },
     };
