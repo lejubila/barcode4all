@@ -15,6 +15,11 @@ Route::get('/locale/{locale}', function (string $locale) {
     return redirect()->back(fallback: route('barcode.index'));
 })->name('locale.switch');
 
+// Legal pages (localized via the SetLocale middleware).
+Route::view('/privacy', 'legal.privacy')->name('legal.privacy');
+Route::view('/cookie-policy', 'legal.cookie')->name('legal.cookie');
+Route::view('/terms', 'legal.terms')->name('legal.terms');
+
 // Generation endpoints are rate limited to protect the conversion pipeline.
 Route::middleware('throttle:60,1')->group(function () {
     Route::post('/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');

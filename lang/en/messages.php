@@ -36,6 +36,13 @@ return [
     'dpi'             => 'DPI (JPEG)',
     'download'        => 'Download',
 
+    'nav_privacy'     => 'Privacy',
+    'nav_cookie'      => 'Cookie',
+    'nav_terms'       => 'Terms',
+    'footer_tagline'  => 'Free service · technical cookies only · no tracking',
+    'cookie_notice'   => 'This site only uses technical cookies required for it to work.',
+    'cookie_notice_ok' => 'Got it',
+
     'preview'         => 'Preview',
     'batch_title'     => 'Batch generation (CSV)',
     'batch_cols'      => 'Columns',

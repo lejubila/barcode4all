@@ -34,7 +34,7 @@ live, composizione guidata dei supplementi EAN e generazione in batch da CSV.
 | PDF | [barryvdh/laravel-dompdf](https://github.com/barryvdh/laravel-dompdf) |
 | EPS | Generatore PostScript nativo |
 | JPEG | librsvg (`rsvg-convert`) + ImageMagick |
-| Frontend | Blade + Alpine.js + Tailwind (CDN) |
+| Frontend | Blade + Alpine.js + Tailwind (self-hostati) |
 | Container | Docker Compose (php-fpm, nginx, MySQL 8) |
 
 ---
@@ -74,6 +74,51 @@ docker compose exec app php artisan optimize:clear   # svuota le cache
 docker compose exec app php artisan test             # esegue i test
 docker compose logs -f app                           # log applicativi
 docker compose down                                  # ferma lo stack
+```
+
+---
+
+## ⚙️ Configurazione (`.env`)
+
+Il file `.env` si crea da `.env.example` (`cp .env.example .env`); `APP_KEY` viene
+generata con `php artisan key:generate` (vedi avvio rapido). Le variabili
+principali:
+
+| Variabile | Descrizione | Sviluppo / Docker | Produzione |
+|---|---|---|---|
+| `APP_NAME` | Titolo del sito (header, footer, `<title>`) | a piacere | a piacere |
+| `APP_KEY` | Chiave di cifratura (generata da artisan) | auto | auto |
+| `APP_ENV` | Ambiente | `local` | `production` |
+| `APP_DEBUG` | Pagine di errore dettagliate | `true` | **`false`** |
+| `APP_URL` | URL pubblico del sito | `http://localhost:8080` | `https://il-tuo-dominio` |
+| `APP_LOCALE` | Lingua di default | `en` | `it` o `en` |
+| `APP_FALLBACK_LOCALE` | Lingua di ripiego | `en` | `it` o `en` |
+| `DB_CONNECTION` / `DB_HOST` / `DB_PORT` / `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD` | Database | già allineate al servizio `db` (`mysql` / `db` / `3306` / `barcodes` / `root` / `secret`) | cambiare solo con un DB esterno |
+| `SESSION_SECURE_COOKIE` | Cookie solo via HTTPS | non impostata | **`true`** |
+| `LEGAL_OWNER_NAME` | Titolare del trattamento (nome) | — | **da compilare** |
+| `LEGAL_CONTACT_EMAIL` | Email di contatto privacy | — | **da compilare** |
+| `LEGAL_HOSTING` | Luogo/provider di hosting (responsabile del trattamento) | — | **da compilare** |
+| `LEGAL_UPDATED_AT` | Data ultimo aggiornamento documenti legali (es. `2026-06-02`) | — | **da compilare** |
+
+> La scelta della lingua è comunque automatica dal browser; `APP_LOCALE` vale solo
+> come ripiego. I valori `LEGAL_*` alimentano informativa privacy, cookie policy,
+> termini d'uso e footer.
+
+> **Nota — porta host:** `APP_PORT` non è una variabile di `.env` ma una env del
+> Docker Compose per mappare la porta host (`APP_PORT=8091 docker compose up -d`).
+
+Esempio dei valori da impostare **in produzione**:
+
+```dotenv
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://il-tuo-dominio
+SESSION_SECURE_COOKIE=true
+
+LEGAL_OWNER_NAME="Mario Rossi"
+LEGAL_CONTACT_EMAIL=privacy@esempio.it
+LEGAL_HOSTING="Oracle Cloud — data center di Milano (UE)"
+LEGAL_UPDATED_AT=2026-06-02
 ```
 
 ---
@@ -165,6 +210,23 @@ anteprima.
 - Validazione e sanitizzazione dell'input (solo caratteri ammessi per tipo).
 - File temporanei in `storage/app/temp/`, eliminati dopo l'invio.
 - Rate limiting sugli endpoint di generazione.
+
+---
+
+## ⚖️ Aspetti legali / produzione
+
+L'app include informativa privacy, cookie policy e termini d'uso localizzati
+(`/privacy`, `/cookie-policy`, `/terms`), con footer e link in ogni pagina. Usa
+**solo cookie tecnici** (`laravel_session`, `XSRF-TOKEN`) e **nessun tracciamento**;
+gli asset front-end (Tailwind, Alpine) sono **self-hostati** in `public/vendor/`,
+quindi non vengono coinvolte terze parti.
+
+Prima di pubblicare, imposta nel `.env` i dati del titolare e le opzioni di
+produzione (`LEGAL_*`, `APP_DEBUG`, `SESSION_SECURE_COOKIE`, …): vedi la sezione
+[Configurazione (`.env`)](#️-configurazione-env).
+
+> I testi legali sono **modelli** di base: falli verificare da un professionista
+> per il tuo caso specifico.
 
 ---
 

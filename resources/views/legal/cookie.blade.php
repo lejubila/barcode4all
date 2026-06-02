@@ -1,0 +1,23 @@
+@extends('layouts.app')
+
+@php $date = config('legal.updated_at') ?: __('legal.no_date'); @endphp
+
+@section('content')
+<article class="bg-white rounded-xl shadow p-6 md:p-8 max-w-3xl mx-auto">
+    <h1 class="text-2xl font-bold text-slate-900">{{ __('legal.cookie.title') }}</h1>
+    <p class="text-xs text-slate-400 mt-1">{{ __('legal.updated', ['date' => $date]) }}</p>
+    <p class="text-slate-600 leading-relaxed mt-4">{{ __('legal.cookie.intro') }}</p>
+
+    <h2 class="text-lg font-semibold text-slate-900 mt-6">{{ __('legal.cookie.tech_t') }}</h2>
+    <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-600 leading-relaxed">
+        <li>{{ __('legal.cookie.c_session') }}</li>
+        <li>{{ __('legal.cookie.c_xsrf') }}</li>
+    </ul>
+    <p class="text-slate-600 leading-relaxed mt-3">{{ __('legal.cookie.noconsent') }}</p>
+
+    <h2 class="text-lg font-semibold text-slate-900 mt-6">{{ __('legal.cookie.manage_t') }}</h2>
+    <p class="text-slate-600 leading-relaxed mt-2">{{ __('legal.cookie.manage') }}</p>
+
+    <p class="mt-8"><a href="{{ route('barcode.index') }}" class="text-indigo-600 hover:underline">&larr; {{ __('legal.home') }}</a></p>
+</article>
+@endsection

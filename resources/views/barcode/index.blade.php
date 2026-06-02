@@ -1,29 +1,10 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name') }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body class="bg-slate-100 text-slate-800">
-<div class="max-w-5xl mx-auto p-6" x-data="barcodeApp()">
-    <header class="mb-6 flex items-start justify-between gap-4">
-        <div>
-            <h1 class="text-3xl font-bold text-slate-900">{{ config('app.name') }}</h1>
-            <p class="text-slate-500">{{ __('messages.subtitle') }}</p>
-        </div>
-        {{-- Selettore lingua / Language switcher --}}
-        <nav class="flex items-center gap-2 text-sm shrink-0 pt-1">
-            @foreach (['it' => 'IT', 'en' => 'EN'] as $loc => $label)
-                <a href="{{ route('locale.switch', $loc) }}"
-                   class="px-2 py-1 rounded {{ app()->getLocale() === $loc ? 'bg-indigo-600 text-white font-semibold' : 'text-slate-500 hover:bg-slate-200' }}">
-                    {{ $label }}
-                </a>
-            @endforeach
-        </nav>
+@extends('layouts.app')
+
+@section('content')
+<div x-data="barcodeApp()">
+    <header class="mb-6">
+        <h1 class="text-3xl font-bold text-slate-900">{{ config('app.name') }}</h1>
+        <p class="text-slate-500">{{ __('messages.subtitle') }}</p>
     </header>
 
     <div class="grid md:grid-cols-2 gap-6">
@@ -202,8 +183,9 @@
         </div>
     </div>
 </div>
+@endsection
 
-<style>[x-cloak]{display:none!important}</style>
+@push('scripts')
 <script>
 const I18N = @json(__('messages'));
 function barcodeApp() {
@@ -313,5 +295,4 @@ function barcodeApp() {
     };
 }
 </script>
-</body>
-</html>
+@endpush

@@ -36,6 +36,13 @@ return [
     'dpi'             => 'DPI (JPEG)',
     'download'        => 'Scarica',
 
+    'nav_privacy'     => 'Privacy',
+    'nav_cookie'      => 'Cookie',
+    'nav_terms'       => 'Termini',
+    'footer_tagline'  => 'Servizio gratuito · solo cookie tecnici · nessun tracciamento',
+    'cookie_notice'   => 'Questo sito utilizza solo cookie tecnici necessari al funzionamento.',
+    'cookie_notice_ok' => 'Ho capito',
+
     'preview'         => 'Anteprima',
     'batch_title'     => 'Generazione batch (CSV)',
     'batch_cols'      => 'Colonne',
