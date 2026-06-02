@@ -121,6 +121,31 @@ LEGAL_HOSTING="Oracle Cloud — data center di Milano (UE)"
 LEGAL_UPDATED_AT=2026-06-02
 ```
 
+### Dietro reverse proxy HTTPS (es. Apache ProxyPass)
+
+L'app si fida dei proxy e legge gli header `X-Forwarded-*`, e — con `APP_URL`
+`https://…` — forza lo schema `https` (niente risorse in http / contenuto misto).
+Assicurati però che **Apache inoltri l'header dello schema**: con `ProxyPass`,
+`X-Forwarded-Proto` non viene impostato in automatico.
+
+```apache
+<VirtualHost *:443>
+    ServerName barcode.tuo-dominio
+    SSLEngine on
+    # ... certificati ...
+
+    ProxyPreserveHost On
+    RequestHeader set X-Forwarded-Proto "https"
+    RequestHeader set X-Forwarded-Port  "443"
+
+    ProxyPass        / http://127.0.0.1:8091/
+    ProxyPassReverse / http://127.0.0.1:8091/
+</VirtualHost>
+```
+
+Imposta `APP_URL=https://barcode.tuo-dominio` e `SESSION_SECURE_COOKIE=true`, poi
+`docker compose exec app php artisan optimize:clear`.
+
 ---
 
 ## 🔌 Endpoint
