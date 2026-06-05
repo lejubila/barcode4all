@@ -4,6 +4,8 @@ Applicazione **Laravel + Docker** per generare barcode professionali in formato
 **vettoriale** (SVG, EPS, PDF) e raster ad alta risoluzione (JPEG), con anteprima
 live, composizione guidata dei supplementi EAN e generazione in batch da CSV.
 
+🔗 **Demo online:** [barcode.4allis.it](https://barcode.4allis.it/)
+
 ---
 
 ## ✨ Caratteristiche
